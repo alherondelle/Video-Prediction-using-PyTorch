@@ -8,12 +8,17 @@ from torch.utils.data import DataLoader
 import pytorch_lightning as pl
 from pytorch_lightning import Trainer
 from multiprocessing import Process
-
 from utils.start_tensorboard import run_tensorboard
 from models.seq2seq_ConvLSTM import EncoderDecoderConvLSTM
 from data.MovingMNIST import MovingMNIST
-
+from data.MeteosatLoader import import_bucket, unzip 
+from data.processing_data import split_dataset4KITTI, process_data
+import data.ImageTestDataset
+import data.ImageTrainDataset
+from data.ImageTestDataset import ImageTestDataset
+from data.ImageTrainDataset import ImageTrainDataset
 import argparse
+import torchvision.transforms as transforms 
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--lr', default=1e-4, type=float, help='learning rate')
@@ -52,19 +57,22 @@ class MovingMNISTLightning(pl.LightningModule):
 
     def create_video(self, x, y_hat, y):
         # predictions with input for illustration purposes
-        preds = torch.cat([x.cpu(), y_hat.unsqueeze(2).cpu()], dim=1)[0]
-
+        # Permutation pour mettre la dim des channels à la bonne place 
+        y_hat = y_hat.permute(0, 1, 4, 2, 3)
+        y = y.permute(0, 1, 4, 2, 3)
+        preds = torch.cat([x.cpu(), y_hat.cpu()], dim=1)[0]
         # entire input and ground truth
-        y_plot = torch.cat([x.cpu(), y.unsqueeze(2).cpu()], dim=1)[0]
+        y_plot = torch.cat([x.cpu(), y.cpu()], dim=1)[0]
 
         # error (l2 norm) plot between pred and ground truth
-        difference = (torch.pow(y_hat[0] - y[0], 2)).detach().cpu()
+        '''difference = (torch.pow(y_hat[0] - y[0], 2)).detach().cpu()
         zeros = torch.zeros(difference.shape)
-        difference_plot = torch.cat([zeros.cpu().unsqueeze(0), difference.unsqueeze(0).cpu()], dim=1)[
+        difference_plot = torch.cat([zeros.cpu(), difference.cpu()], dim=1)[
             0].unsqueeze(1)
-
+        print('preds shape : ', preds.shape, 'y_plot shape : ', y_plot.shape, 'difference_plot shape : ', difference_plot.shape)
+        '''
         # concat all images
-        final_image = torch.cat([preds, y_plot, difference_plot], dim=0)
+        final_image = torch.cat([preds, y_plot], dim=0)
 
         # make them into a single grid image file
         grid = torchvision.utils.make_grid(final_image, nrow=self.n_steps_past + self.n_steps_ahead)
@@ -84,7 +92,8 @@ class MovingMNISTLightning(pl.LightningModule):
         y = y.squeeze()
 
         y_hat = self.forward(x).squeeze()  # is squeeze neccessary?
-
+        #Permutation ajoutée pour avoir correspondance entre Y et Y_hat dans la loss function : peut-être pas une solution
+        y_hat = y_hat.permute(0,2,3,4,1)
         loss = self.criterion(y_hat, y)
 
         # save learning_rate
@@ -126,13 +135,12 @@ class MovingMNISTLightning(pl.LightningModule):
 
     @pl.data_loader
     def train_dataloader(self):
-        train_data = MovingMNIST(
-            train=True,
-            data_root=self.path,
-            seq_len=self.n_steps_past + self.n_steps_ahead,
-            image_size=64,
-            deterministic=True,
-            num_digits=2)
+        transforms_ = [transforms.Normalize((0.500,0.500,0.500),(0.500,0.500,0.500))]
+        train_data = ImageTestDataset(
+            'data/METEOSAT/pkl/train_data.pkl',
+            transforms_=transforms_,
+            nt=20
+            )
 
         train_loader = torch.utils.data.DataLoader(
             dataset=train_data,
@@ -143,13 +151,11 @@ class MovingMNISTLightning(pl.LightningModule):
 
     @pl.data_loader
     def test_dataloader(self):
-        test_data = MovingMNIST(
-            train=False,
-            data_root=self.path,
-            seq_len=self.n_steps_past + self.n_steps_ahead,
-            image_size=64,
-            deterministic=True,
-            num_digits=2)
+        test_data = ImageTestDataset(
+            'data/METEOSAT/pkl/test_data.pkl',
+            transforms_=transforms_,
+            nt=20
+            )
 
         test_loader = torch.utils.data.DataLoader(
             dataset=test_data,
@@ -161,7 +167,7 @@ class MovingMNISTLightning(pl.LightningModule):
 
 
 def run_trainer():
-    conv_lstm_model = EncoderDecoderConvLSTM(nf=opt.n_hidden_dim, in_chan=1)
+    conv_lstm_model = EncoderDecoderConvLSTM(nf=opt.n_hidden_dim, in_chan=3)
 
     model = MovingMNISTLightning(model=conv_lstm_model)
 
@@ -176,12 +182,14 @@ def run_trainer():
 
 
 if __name__ == '__main__':
+    import_bucket()
+    unzip()
+    split_dataset4KITTI('data/METEOSAT')
+    process_data()
+    torch.multiprocessing.set_start_method('spawn')
     p1 = Process(target=run_trainer)                    # start trainer
     p1.start()
     p2 = Process(target=run_tensorboard(new_run=True))  # start tensorboard
     p2.start()
     p1.join()
     p2.join()
-
-
-

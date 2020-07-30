@@ -1,5 +1,5 @@
 # Video-Prediction-using-PyTorch
-Repository for frame prediction on the MovingMNIST dataset using seq2seq ConvLSTM following this guide https://holmdk.github.io/2020/04/02/video_prediction.html.
+Repository for frame prediction on a 3 channel video frames (e.g. Satellite images, METEOSAT) dataset using seq2seq ConvLSTM following this guide https://holmdk.github.io/2020/04/02/video_prediction.html. (Thank you for the tutorial :) ) 
 
 
 ## Libraries
@@ -20,7 +20,7 @@ tensorboard=1.15.0a20190708
 2. Clone this repo
 
 ```bash
-git clone https://github.com/holmdk/Video-Prediction-using-PyTorch.git
+git clone https://github.com/alherondelle/Video-Prediction-using-PyTorch.git
 cd ./Video-Prediction-using-PyTorch
 ```
 

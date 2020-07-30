@@ -36,7 +36,7 @@ class EncoderDecoderConvLSTM(nn.Module):
                                                bias=True)
 
         self.decoder_CNN = nn.Conv3d(in_channels=nf,
-                                     out_channels=1,
+                                     out_channels=3,
                                      kernel_size=(1, 3, 3),
                                      padding=(0, 1, 1))
 
@@ -47,7 +47,7 @@ class EncoderDecoderConvLSTM(nn.Module):
 
         # encoder
         for t in range(seq_len):
-            h_t, c_t = self.encoder_1_convlstm(input_tensor=x[:, t, :, :],
+            h_t, c_t = self.encoder_1_convlstm(input_tensor=x[:, t, :, : , :],
                                                cur_state=[h_t, c_t])  # we could concat to provide skip conn here
             h_t2, c_t2 = self.encoder_2_convlstm(input_tensor=h_t,
                                                  cur_state=[h_t2, c_t2])  # we could concat to provide skip conn here
