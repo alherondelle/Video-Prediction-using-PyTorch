@@ -84,10 +84,10 @@ class EncoderDecoderConvLSTM(nn.Module):
         b, seq_len, _, h, w = x.size()
 
         # initialize hidden states
-        h_t, c_t = self.encoder_1_convlstm.init_hidden(batch_size=b, image_size=(h, w))
-        h_t2, c_t2 = self.encoder_2_convlstm.init_hidden(batch_size=b, image_size=(h, w))
-        h_t3, c_t3 = self.decoder_1_convlstm.init_hidden(batch_size=b, image_size=(h, w))
-        h_t4, c_t4 = self.decoder_2_convlstm.init_hidden(batch_size=b, image_size=(h, w))
+        h_t, c_t = self.encoder_1_convlstm.init_hidden(batch_size=b, nb_chan= 3, image_size=(h, w))
+        h_t2, c_t2 = self.encoder_2_convlstm.init_hidden(batch_size=b, nb_chan= 3, image_size=(h, w))
+        h_t3, c_t3 = self.decoder_1_convlstm.init_hidden(batch_size=b, nb_chan= 3, image_size=(h, w))
+        h_t4, c_t4 = self.decoder_2_convlstm.init_hidden(batch_size=b, nb_chan= 3, image_size=(h, w))
 
         # autoencoder forward
         outputs = self.autoencoder(x, seq_len, future_seq, h_t, c_t, h_t2, c_t2, h_t3, c_t3, h_t4, c_t4)
