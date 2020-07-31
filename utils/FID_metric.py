@@ -42,8 +42,8 @@ act_t : activation function associated with the real image
 act_f : activation function associated with the generated image
 '''
 def compute_act_inceptionv3(img_true, img_false):
-    resized_A1 = nn.functional.interpolate(A1, size=(299,299), mode='bilinear', align_corners=False).cuda()
-    resized_real_A = nn.functional.interpolate(real_A, size=(299,299), mode='bilinear', align_corners=False).cuda()
+    resized_A1 = nn.functional.interpolate(img_false, size=(299,299), mode='bilinear', align_corners=False).cuda()
+    resized_real_A = nn.functional.interpolate(img_true, size=(299,299), mode='bilinear', align_corners=False).cuda()
     act_t = InceptionV3(resized_real_A).squeeze(0)
     act_f = InceptionV3(resized_A1).squeeze(0)
     return act_t, act_f
