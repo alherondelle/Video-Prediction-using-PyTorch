@@ -1,4 +1,5 @@
 import glob
+import cv2
 import random
 import os
 import torchvision.transforms as transforms
@@ -9,7 +10,7 @@ from torch.utils.data import Dataset
 from PIL import Image
 import numpy as np
 
-desired_im_sz = (64, 64) #128, 160
+desired_im_sz = (128, 128) #128, 160
 def to_rgb(image):
         rgb_image = Image.new("RGB", image.size)
         rgb_image.paste(image)
@@ -46,8 +47,8 @@ class ImageTrainDataset(Dataset):
             f.close()
             #img = transforms.RandomHorizontalFlip(p=Flip_p)(img)
             #Les pickles portent des arrays et non des tenseurs : à modifier quand PyTorch sera installé
-            #img = cv2.resize(img, (opt.img_width, opt.img_height))
             img = random_crop_np(h_rand, w_rand, img)
+            img = cv2.resize(img, (64, 64))
             img[:,:,0] = img[:,:,0] + img[:,:,2]
             img[:,:,1] = img[:,:,1] + img[:,:,2]
             img = (img/np.ndarray.max(img))
@@ -57,7 +58,6 @@ class ImageTrainDataset(Dataset):
             img = self.transform(img)
             frame_seq.append(img)
         frame_seq = torch.stack(frame_seq, 0).permute(0, 3, 2, 1)
-        print('shape de frame_seq : ', frame_seq.shape)
         return frame_seq
 
     def __len__(self):

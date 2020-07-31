@@ -1,5 +1,6 @@
 import glob
 import random
+import cv2
 import os
 import torchvision.transforms as transforms
 import torch
@@ -9,7 +10,8 @@ from torch.utils.data import Dataset
 from PIL import Image
 import numpy as np 
 
-desired_im_sz = (64, 64)
+desired_im_sz = (128, 128)
+
 def to_rgb(image):
         rgb_image = Image.new("RGB", image.size)
         rgb_image.paste(image)
@@ -38,8 +40,8 @@ class ImageTestDataset(Dataset):
             f = open(img_name, 'rb')
             img = pickle.load(f)
             f.close()
-            #img = cv2.resize(img, (opt.img_width, opt.img_height))
             img = random_crop_np(h_rand, w_rand, img)
+            img = cv2.resize(img, (64, 64))
             img[:,:,0] = img[:,:,0] + img[:,:,2]
             img[:,:,1] = img[:,:,1] + img[:,:,2]
             img = (img/np.ndarray.max(img))

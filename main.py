@@ -65,14 +65,12 @@ class MovingMNISTLightning(pl.LightningModule):
         y_plot = torch.cat([x.cpu(), y.cpu()], dim=1)[0]
 
         # error (l2 norm) plot between pred and ground truth
-        '''difference = (torch.pow(y_hat[0] - y[0], 2)).detach().cpu()
+        difference = (torch.pow(y_hat - y, 2)).detach().cpu()
         zeros = torch.zeros(difference.shape)
         difference_plot = torch.cat([zeros.cpu(), difference.cpu()], dim=1)[
-            0].unsqueeze(1)
-        print('preds shape : ', preds.shape, 'y_plot shape : ', y_plot.shape, 'difference_plot shape : ', difference_plot.shape)
-        '''
+            0]
         # concat all images
-        final_image = torch.cat([preds, y_plot], dim=0)
+        final_image = torch.cat([preds, y_plot, difference_plot], dim=0)
 
         # make them into a single grid image file
         grid = torchvision.utils.make_grid(final_image, nrow=self.n_steps_past + self.n_steps_ahead)
@@ -90,7 +88,6 @@ class MovingMNISTLightning(pl.LightningModule):
         x, y = batch[:, 0:self.n_steps_past, :, :, :], batch[:, self.n_steps_past:, :, :, :]
         x = x.permute(0, 1, 4, 2, 3)
         y = y.squeeze()
-
         y_hat = self.forward(x).squeeze()  # is squeeze neccessary?
         #Permutation ajoutée pour avoir correspondance entre Y et Y_hat dans la loss function : peut-être pas une solution
         y_hat = y_hat.permute(0,2,3,4,1)
@@ -182,8 +179,8 @@ def run_trainer():
 
 
 if __name__ == '__main__':
-    import_bucket()
-    unzip()
+    #import_bucket()
+    #unzip()
     split_dataset4KITTI('data/METEOSAT')
     process_data()
     torch.multiprocessing.set_start_method('spawn')
