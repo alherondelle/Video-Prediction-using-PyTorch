@@ -21,6 +21,11 @@ from PIL import Image
 #Importation à partir d'un Google Bucket
 
 def import_bucket():
+  if not os.path.exists('data/METEOSAT'):
+    os.mkdir('data/METEOSAT')
+    os.mkdir('data/METEOSAT/train')
+    os.mkdir('data/METEOSAT/test')
+    os.mkdir('data/METEOSAT/val')
   os.system('export GOOGLE_APPLICATION_CREDENTIALS="cle.json"')
       
 
