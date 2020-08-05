@@ -132,10 +132,8 @@ class MovingMNISTLightning(pl.LightningModule):
 
     @pl.data_loader
     def train_dataloader(self):
-        transforms_ = [transforms.Normalize((0.500,0.500,0.500),(0.500,0.500,0.500))]
         train_data = ImageTestDataset(
             'data/METEOSAT/pkl/train_data.pkl',
-            transforms_=transforms_,
             nt=20
             )
 
@@ -150,7 +148,6 @@ class MovingMNISTLightning(pl.LightningModule):
     def test_dataloader(self):
         test_data = ImageTestDataset(
             'data/METEOSAT/pkl/test_data.pkl',
-            transforms_=transforms_,
             nt=20
             )
 

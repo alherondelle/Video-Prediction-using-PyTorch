@@ -25,9 +25,8 @@ def random_crop_np(hrand, wrand, imag) :
 
 class ImageTestDataset(Dataset):
 
-    def __init__(self, video_pkl_file, transforms_=None,nt=20):
+    def __init__(self, video_pkl_file, nt=20):
         self.video_pkl_file = video_pkl_file
-        self.transform = transforms.Compose(transforms_)
         self.nt = nt
         test_pkl_file = open(video_pkl_file, 'rb')
         self.data = pickle.load(test_pkl_file)
@@ -48,7 +47,6 @@ class ImageTestDataset(Dataset):
             img = img.astype(np.float32)
             img = np.moveaxis(img, 2,0)
             img = torch.from_numpy(img)
-            img = self.transform(img)
             frame_seq.append(img)
         frame_seq = torch.stack(frame_seq, 0).permute(0,3,2,1)
         return frame_seq
