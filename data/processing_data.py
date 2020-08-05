@@ -58,7 +58,7 @@ def process_im(im, desired_sz):
     img = img[:, d:d+desired_sz[1]]
     return img
 
-def video_load(video_path,nt=8):
+def video_load(video_path,nt=20):
     video_info = []
     video_folder = os.listdir(video_path)
     cnt=0
